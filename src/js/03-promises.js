@@ -11,40 +11,39 @@ refs.formEl.addEventListener('submit', e => {
   const amount = +e.target.elements.amount.value;
 
   let position = 1;
-  let shouldResolve;
 
-  createPromise({ position, delay, shouldResolve })
+  createPromise()
     .then(handlePromise)
     .catch(handlePromise);
 
-  function handlePromise({ position, delay, shouldResolve }) {
+  function handlePromise(shouldResolve) {
     const notifyFunction = shouldResolve
       ? Notiflix.Notify.success
       : Notiflix.Notify.failure;
     try {
-      notifyFunction(`✅ ${shouldResolve ? 'Fulfilled' : 'Rejected'} promise ${position} in ${delay}ms`);
+      notifyFunction(`✅ ${ shouldResolve ? 'Fulfilled' : 'Rejected' } promise ${position} in ${delay + (position - 1) * step}ms`);
     } catch (error) {
       console.error('Error:', error);
     }
     if (position < amount) {
       position++;
       setTimeout(() => {
-        shouldResolve = Math.random() > 0.3;
-        createPromise({ position, delay, shouldResolve })
+        createPromise()
           .then(handlePromise)
           .catch(handlePromise);
-      }, delay);
+      }, step || 0);
     }
   }
 
   e.target.reset();
 });
 
-function createPromise({ position, delay, shouldResolve }) {
+function createPromise() {
+  const shouldResolve = Math.random() > 0.3;
   const promise = new Promise((resolve, reject) => {
-    setTimeout(() => {
-      shouldResolve ? resolve({ position, delay, shouldResolve }) : reject({ position, delay, shouldResolve });
-    }, delay + (position - 1) * delay);
+    shouldResolve
+      ? resolve(shouldResolve)
+      : reject(shouldResolve);
   });
   return promise;
 }
